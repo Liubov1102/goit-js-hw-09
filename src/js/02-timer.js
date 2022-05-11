@@ -2,14 +2,16 @@ import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import Notiflix from 'notiflix';
 
-const inputEl = document.querySelector("input");
-const startBtn = document.querySelector('[data-start]');
-const daysEl = document.querySelector('[data-days]');
-const hoursEl = document.querySelector('[data-hours]');
-const minutesEl = document.querySelector('[data-minutes]');
-const secondsEl = document.querySelector('[data-seconds]');
+const refs = {
+ inputEl : document.querySelector("input"),
+ startBtn : document.querySelector('[data-start]'),
+ daysEl : document.querySelector('[data-days]'),
+ hoursEl : document.querySelector('[data-hours]'),
+ minutesEl : document.querySelector('[data-minutes]'),
+ secondsEl : document.querySelector('[data-seconds]'),
+};
 let timerId = null;
-  
+
 const options = {
     enableTime: true,
     time_24hr: true,
@@ -19,20 +21,21 @@ const options = {
        
         if (selectedDates[0] < new Date()) {
             Notiflix.Notify.failure("Please choose a date in the future");
-            startBtn.disabled = true;
+            refs.startBtn.disabled = true;
         } else {
-            startBtn.disabled = false;
+            refs.startBtn.disabled = false;
         }
     },
 };
 
-const fp = flatpickr(inputEl, options); 
+const fp = flatpickr(refs.inputEl, options); 
   
 function onBtnClick() {
     timerId = setInterval(() => {
-      const restTime = convertMs(fp.selectedDates[0] - Date.now());
-      markupEdit(restTime);      
-    }, 1000);
+        const restTime = convertMs(fp.selectedDates[0] - Date.now());
+        markupEdit(restTime);  
+        stopTicking(restTime);    
+    },  1000);
 }; 
   
 function convertMs(ms) {
@@ -54,10 +57,18 @@ function addLeadingZero(value) {
 };
 
 function markupEdit({ days, hours, minutes, seconds }) {
-    daysEl.textContent = addLeadingZero(days);
-    hoursEl.textContent = addLeadingZero(hours);
-    minutesEl.textContent = addLeadingZero(minutes);
-    secondsEl.textContent = addLeadingZero(seconds);
+    refs.daysEl.textContent = addLeadingZero(days);
+    refs.hoursEl.textContent = addLeadingZero(hours);
+    refs.minutesEl.textContent = addLeadingZero(minutes);
+    refs.secondsEl.textContent = addLeadingZero(seconds);
+
+    refs.startBtn.disabled = true;
 };
 
-startBtn.addEventListener('click', onBtnClick);
+function stopTicking({ days, hours, minutes, seconds }) {
+    if (days <=0 && hours <=0 && minutes <=0 && seconds <=0) {
+      markupEdit({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+    }
+};
+
+refs.startBtn.addEventListener('click', onBtnClick);
